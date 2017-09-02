@@ -1,0 +1,27 @@
+
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+<h2>Create Item</h2>
+<form action="#" method = "POST">
+    <h3><label for="name">Item Name</label></h3><br>
+    <input type="text" name="name" maxlength="50"><br>
+
+    <h3><label for="description">Description</label></h3><br>
+    <input type="text" name="description"><br>
+
+    <h3><label for="category">Category</label></h3><br>
+        <div>
+            <input type="radio" name="category" value="Soccer">Soccer<br>
+            <input type="radio" name="category" value="Basketball">Basketball<br>
+            <input type="radio" name="category" value="Baseball">Baseball<br>
+            <input type="radio" name="category" value="Frisbee">Frisbee<br>
+            <input type="radio" name="category" value="Snowboarding">Snowboarding<br>
+            <input type="radio" name="category" value="Rock Climbing">Rock Climbing<br>
+            <input type="radio" name="category" value="Foosball">Foosball<br>
+            <input type="radio" name="category" value="Sating">Skating<br>
+            <input type="radio" name="category" value="Hockey">Hockey<br>
+        </div>
+    <button type="submit">Submit</button>
+</form>
+{% endblock %}

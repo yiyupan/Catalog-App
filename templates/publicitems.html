@@ -1,0 +1,31 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "publicheader.html" %}
+<h1>Categories</h1>
+
+    {% for i in categories %}
+
+    <div>
+
+        <a href="{{url_for('showItems', category_name = i.name)}}">{{i.name}}</a>
+
+    </div>
+
+
+    {% endfor %}
+
+<h1>{{category.name}} Items</h1>
+
+{% for i in items %}
+
+<div>
+
+    <a href="{{url_for('showInfo', category_name = category.name, item_name = i.name)}}">{{i.name}}</a>
+    
+
+</div>
+
+
+{% endfor %}
+
+{% endblock %}

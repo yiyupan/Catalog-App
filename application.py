@@ -1,30 +1,23 @@
 #!/usr/bin/env python
 
 from flask import Flask, render_template, request, redirect
-from flask import jsonify, url_for, flash
-
-
+from flask import jsonify, url_for, flash, g, make_response
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Category, Base, Item, User
-
-
-# New imports for this step
+from functools import wraps
 from flask import session as login_session
 import random
 import string
-
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
 import json
-from flask import make_response
 import requests
 app = Flask(__name__)
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
-# APPLICATION_NAME = "Catalog Application"
 
 # Connect to Database and create database session
 engine = create_engine('sqlite:///categoryitems.db')
@@ -32,6 +25,15 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if login_session is None:
+            return redirect(url_for('showLogin'), next=request.url)
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 # Create anti-forgery state token
@@ -266,9 +268,8 @@ def showInfo(category_name, item_name):
 
 # Create a new item
 @app.route('/catalog/new/', methods=['GET', 'POST'])
+@login_required
 def newItem():
-    if 'username' not in login_session:
-        return redirect('/login')
     if request.method == 'POST':
         category = session.query(Category).filter_by(
                                         name=request.form['category']).one()
@@ -287,16 +288,11 @@ def newItem():
 
 # Edit an item
 @app.route('/catalog/<string:item_name>/edit/', methods=['GET', 'POST'])
+@login_required
 def editItem(item_name):
     editedItem = session.query(Item).filter_by(name=item_name).one()
-    if 'username' not in login_session:
-        return redirect('/login')
     if editedItem.user_id != login_session['user_id']:
-        return """
-         <script>function myFunction() {alert('You are not
-         authorized to edit this item. Please create your own item in
-         order to edit.');}</script><body onload='myFunction()''>
-         """
+        return render_template('pop_up.html')
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -317,16 +313,11 @@ def editItem(item_name):
 
 # Delete an item
 @app.route('/catalog/<string:item_name>/delete/', methods=['GET', 'POST'])
+@login_required
 def deleteItem(item_name):
     itemToDelete = session.query(Item).filter_by(name=item_name).one()
-    if 'username' not in login_session:
-        return redirect('/login')
     if itemToDelete.user_id != login_session['user_id']:
-        return """
-         <script>function myFunction() {alert('You are not
-         authorized to delete this item. Please create your own item
-         in order to delete.');}</script><body onload='myFunction()''>
-         """
+        return render_template('pop_up.html')
     if request.method == 'POST':
         session.delete(itemToDelete)
         session.commit()
